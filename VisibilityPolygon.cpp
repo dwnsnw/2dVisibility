@@ -39,6 +39,37 @@ int VisibilityPolygon::getOutputCount() const
     return outputsCount;
 }
 
+void VisibilityPolygon::generatePolygon( b2World* m_world,b2Vec2 lightPos, const b2Vec2 &viewportMin, const b2Vec2 &viewportMax )
+{
+    initData();
+    if ( viewportMax.x <= viewportMin.x || viewportMax.y <= viewportMin.y )
+        return;
+    
+    viewportMinCorner = viewportMin;
+    viewportMaxCorner = viewportMax;
+    loadEdgeOfViewPort( viewportMinCorner, viewportMaxCorner);
+
+    ObjectQueryCallback lightenedObjectQueryCallback;
+    b2AABB visionAreaAABB;
+    visionAreaAABB.lowerBound = viewportMinCorner;
+    visionAreaAABB.upperBound = viewportMaxCorner;
+    m_world->QueryAABB( &lightenedObjectQueryCallback , visionAreaAABB);
+    for ( int i = 0; i < lightenedObjectQueryCallback.polygon.size(); i++ )
+    {
+        b2Fixture* fixture = lightenedObjectQueryCallback.polygon[ i ];
+        b2PolygonShape* shape = (b2PolygonShape* )lightenedObjectQueryCallback.polygon[ i ]->GetShape();
+        int count = shape->GetVertexCount();
+        b2Vec2* vertices = ( b2Vec2* )b2Alloc( count * sizeof( b2Vec2 ) );
+        for ( int i = 0; i < count; ++i )
+        {
+            vertices[ i ] = fixture->GetBody()->GetWorldPoint( shape->GetVertex( i ) );
+        }
+        convertToSegments( vertices, shape->GetVertexCount() );
+    }
+    setLightLocation( lightPos );
+    sweep();
+}
+
 void VisibilityPolygon::sweep()
 {
     EndPoint *points = (EndPoint * )b2Alloc( segmentsCount * 2 * sizeof( EndPoint ) );

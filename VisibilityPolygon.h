@@ -143,6 +143,7 @@ public:
     void addSegment( const b2Vec2& p1, const b2Vec2& p2,int start = 0 );
     void sweep();
     void convertToSegments( const b2Vec2* polygon, int verticesCount );
+    void generatePolygon( b2World* m_world, b2Vec2 lightPos, const b2Vec2& viewportMinCorner, const b2Vec2& viewportMaxCorner );
     int getOutputCount() const;
 };
 
