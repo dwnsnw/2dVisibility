@@ -116,8 +116,8 @@ private:
     const static int maxSegmentsCount = 1000;
     Segment segments[ maxSegmentsCount ];
     list<Segment> open;
-    
-    b2Vec2 lightPosition;
+    b2Vec2 output[ 2 * maxSegmentsCount ];
+    b2Vec2 viewerLocation;
     b2Vec2 viewportMaxCorner;
     b2Vec2 viewportMinCorner;
     int segmentsCount;
@@ -131,20 +131,18 @@ private:
     b2Vec2 lineIntersection(const b2Vec2& p1, const b2Vec2& p2, const b2Vec2& p3, const b2Vec2& p4 );
     bool trySegmentsIntersect( const Segment& s, int start = 0 );
     void addTriangle( float32 angle1, float32 angle2, Segment segment );
-    
-
+    void addEdgeSegment( const b2Vec2& p1, const b2Vec2& p2 );
+    void addSegment( const b2Vec2& p1, const b2Vec2& p2,int start );
 public:
-    b2Vec2 output[ 2 * maxSegmentsCount ];
     VisibilityPolygon();
     void initData();
-    void addEdgeSegment( const b2Vec2& p1, const b2Vec2& p2 );
-    void setLightLocation( const b2Vec2& lightPosition );
-    void loadMapInViewPort( const Segment* segments, const int& count, const b2Vec2& viewportMinCorner, const b2Vec2& viewportMaxCorner );
-    void addSegment( const b2Vec2& p1, const b2Vec2& p2,int start = 0 );
+    void setViewerLocation( const b2Vec2& viewerLocation );
+    void addSegment( const b2Vec2& p1, const b2Vec2& p2 );
     void sweep();
     void convertToSegments( const b2Vec2* polygon, int verticesCount );
     void generatePolygon( b2World* m_world, b2Vec2 lightPos, const b2Vec2& viewportMinCorner, const b2Vec2& viewportMaxCorner );
-    int getOutputCount() const;
+    b2Vec2* getPolygon();
+    int getPolygonVerticesCount() const;
 };
 
 bool inline VisibilityPolygon::leftOf( const Segment &s, const b2Vec2 &p )

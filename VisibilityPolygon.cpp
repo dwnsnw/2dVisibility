@@ -34,12 +34,17 @@ void VisibilityPolygon::initData()
     viewportMinCorner = b2Vec2( 0, 0 );
 }
 
-int VisibilityPolygon::getOutputCount() const
+int VisibilityPolygon::getPolygonVerticesCount() const
 {
     return outputsCount;
 }
 
-void VisibilityPolygon::generatePolygon( b2World* m_world,b2Vec2 lightPos, const b2Vec2 &viewportMin, const b2Vec2 &viewportMax )
+b2Vec2* VisibilityPolygon::getPolygon()
+{
+    return output;
+}
+
+void VisibilityPolygon::generatePolygon( b2World* m_world,b2Vec2 viewerLoc, const b2Vec2 &viewportMin, const b2Vec2 &viewportMax )
 {
     initData();
     if ( viewportMax.x <= viewportMin.x || viewportMax.y <= viewportMin.y )
@@ -66,7 +71,7 @@ void VisibilityPolygon::generatePolygon( b2World* m_world,b2Vec2 lightPos, const
         }
         convertToSegments( vertices, shape->GetVertexCount() );
     }
-    setLightLocation( lightPos );
+    setViewerLocation( viewerLoc );
     sweep();
 }
 
@@ -93,7 +98,7 @@ void VisibilityPolygon::sweep()
             if ( p.begin )
             {
                 list<Segment>::iterator node = open.begin();
-                while ( node != open.end() && segmentInFrontOf( *p.segment, *node, lightPosition ) )
+                while ( node != open.end() && segmentInFrontOf( *p.segment, *node, viewerLocation ) )
                     node++;
                 if ( node == open.end() )
                 {
@@ -127,6 +132,7 @@ void VisibilityPolygon::sweep()
         }
 
     }
+    delete points;
 }
 
 void VisibilityPolygon::convertToSegments(const b2Vec2 *polygon, int verticesCount )
@@ -140,8 +146,8 @@ void VisibilityPolygon::convertToSegments(const b2Vec2 *polygon, int verticesCou
 
 void VisibilityPolygon::addTriangle( float32 angle1, float32 angle2, Segment segment )
 {
-    b2Vec2 p1 = lightPosition;
-    b2Vec2 p2( lightPosition.x + cosf( angle1 ), lightPosition.y + sinf( angle1 ) );
+    b2Vec2 p1 = viewerLocation;
+    b2Vec2 p2( viewerLocation.x + cosf( angle1 ), viewerLocation.y + sinf( angle1 ) );
     b2Vec2 p3;
     b2Vec2 p4;
     
@@ -152,8 +158,8 @@ void VisibilityPolygon::addTriangle( float32 angle1, float32 angle2, Segment seg
     
     b2Vec2 pBegin = lineIntersection( p3, p4, p1, p2 );
     
-    p2.x = lightPosition.x + cosf( angle2 );
-    p2.y = lightPosition.y + sinf( angle2 );
+    p2.x = viewerLocation.x + cosf( angle2 );
+    p2.y = viewerLocation.y + sinf( angle2 );
     
     b2Vec2 pEnd = lineIntersection( p3, p4, p1, p2 );
     
@@ -174,6 +180,11 @@ void VisibilityPolygon::loadEdgeOfViewPort( const b2Vec2 &viewportMinCorner, con
     addEdgeSegment( leftUp, leftDown );
     addEdgeSegment( leftDown, rightDown );
     addEdgeSegment( rightDown, rightUp );
+}
+
+void VisibilityPolygon::addSegment( const b2Vec2 &p1, const b2Vec2 &p2 )
+{
+    addSegment( p1, p2, 0 );
 }
 
 void VisibilityPolygon::addSegment( const b2Vec2& p1, const b2Vec2& p2, int start )
@@ -233,14 +244,14 @@ bool VisibilityPolygon::trySegmentsIntersect(const Segment &s1, int start )
     return true;
 }
 
-void VisibilityPolygon::setLightLocation( const b2Vec2& position )
+void VisibilityPolygon::setViewerLocation( const b2Vec2& position )
 {
-    lightPosition = position;
+    viewerLocation = position;
     
     for( int i = 0; i < segmentsCount; ++i )
     {
-        segments[ i ].point1.angle = atan2f( segments[ i ].point1.y - lightPosition.y, segments[ i ].point1.x - lightPosition.x );
-        segments[ i ].point2.angle = atan2f( segments[ i ].point2.y - lightPosition.y, segments[ i ].point2.x - lightPosition.x );
+        segments[ i ].point1.angle = atan2f( segments[ i ].point1.y - viewerLocation.y, segments[ i ].point1.x - viewerLocation.x );
+        segments[ i ].point2.angle = atan2f( segments[ i ].point2.y - viewerLocation.y, segments[ i ].point2.x - viewerLocation.x );
         
         float32 dAngle = segments[ i ].point2.angle - segments[ i ].point1.angle;
         
