@@ -26,9 +26,9 @@ This library is used with box2d, it can get box2dpolygon's vertices and construc
   compute the polygon using the object data, so you should add all data that you need before call this function
   
   5)void generatePolygon( b2World* m_world, b2Vec2 viewerLoc, const b2Vec2& viewportMinCorner, const b2Vec2& viewportMaxCorner );  
-  this function is uisng with box2d testbed, you can just using this function to generate polygon data and get it for output array, or you can to know how to using other function to compute polygon from it;
-  Arugment:
-  m_world - your b2world
-  viewerLoc - your viewer location
-  viewportMinCorner - the minmum viewport area position
+  this function is uisng with box2d testbed, you can just using this function to generate polygon data and get it for output array, or you can to know how to using other function to compute polygon from it;  
+  Arugment:  
+  m_world - your b2world  
+  viewerLoc - your viewer location  
+  viewportMinCorner - the minmum viewport area position  
   viewportMaxCorner - the maxmum viewport area position
